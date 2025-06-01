@@ -34,6 +34,12 @@ interface WorldUser {
   verification_level: 'device' | 'orb';
 }
 
+interface Contact {
+  id: string;
+  username: string;
+  avatar?: string;
+}
+
 class WorldMiniKit {
   private isWorldApp(): boolean {
     return typeof window !== 'undefined' && 
@@ -136,6 +142,25 @@ class WorldMiniKit {
       username: 'dev_user',
       wallet_address: '0x742d35Cc6634C0532925a3b8D83D93f4a5c79A1E',
       verification_level: 'orb'
+    };
+  }
+
+  async getContacts(): Promise<WorldMiniKitResponse<Contact[]>> {
+    console.log('Getting contacts');
+    
+    if (this.isWorldApp()) {
+      try {
+        return await (window as any).WorldApp.shareContacts();
+      } catch (error) {
+        console.error('Get contacts error:', error);
+        return { success: false, error: 'Failed to get contacts' };
+      }
+    }
+
+    // Development fallback
+    return {
+      success: true,
+      data: []
     };
   }
 

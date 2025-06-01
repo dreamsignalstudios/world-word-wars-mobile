@@ -109,10 +109,7 @@ const AppContent: React.FC = () => {
         return (
           <div className="max-w-md mx-auto p-4 pb-20 space-y-4">
             <h1 className="text-2xl font-bold text-center">Leaderboards</h1>
-            <div className="space-y-4">
-              <DailyLeaderboard type="daily" onPlayerClick={handlePlayerClick} />
-              <DailyLeaderboard type="alltime" onPlayerClick={handlePlayerClick} />
-            </div>
+            <DailyLeaderboard onPlayerClick={handlePlayerClick} />
           </div>
         );
       case 'profile':
