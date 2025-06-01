@@ -4,19 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Lightbulb, RotateCcw, Volume2 } from 'lucide-react';
+import { ArrowLeft, Lightbulb, RotateCcw } from 'lucide-react';
 import { worldMiniKit } from '@/lib/world-minikit';
-
-const WORDS = [
-  'ABOUT', 'ABOVE', 'ABUSE', 'ACTOR', 'ACUTE', 'ADMIT', 'ADOPT', 'ADULT', 'AFTER', 'AGAIN',
-  'AGENT', 'AGREE', 'AHEAD', 'ALARM', 'ALBUM', 'ALERT', 'ALIEN', 'ALIGN', 'ALIKE', 'ALIVE',
-  'ALLOW', 'ALONE', 'ALONG', 'ALTER', 'ANGEL', 'ANGER', 'ANGLE', 'ANGRY', 'APART', 'APPLE',
-  'APPLY', 'ARENA', 'ARGUE', 'ARISE', 'ARRAY', 'ARROW', 'ASIDE', 'ASSET', 'AVOID', 'AWAKE',
-  'AWARD', 'AWARE', 'BADLY', 'BAKER', 'BALLS', 'BANDS', 'BASIC', 'BEACH', 'BEGAN', 'BEGIN',
-  'BEING', 'BELOW', 'BENCH', 'BILLY', 'BIRTH', 'BLACK', 'BLAME', 'BLANK', 'BLIND', 'BLOCK',
-  'BLOOD', 'BOARD', 'BOBBY', 'BONDS', 'BOOST', 'BOOTH', 'BOUND', 'BRAIN', 'BRAND', 'BRAVE',
-  'BREAD', 'BREAK', 'BREED', 'BRIEF', 'BRING', 'BROAD', 'BROKE', 'BROWN', 'BUILD', 'BUILT'
-];
+import { getRandomWordleWord, isValidWord, VALID_WORDS } from '@/lib/word-database';
 
 interface WordGuessGameProps {
   onBack: () => void;
@@ -43,7 +33,7 @@ export const WordGuessGame: React.FC<WordGuessGameProps> = ({ onBack, soundEnabl
   }, []);
 
   const startNewGame = () => {
-    const word = WORDS[Math.floor(Math.random() * WORDS.length)];
+    const word = getRandomWordleWord();
     setTargetWord(word);
     setGuesses([]);
     setCurrentGuess('');
@@ -51,6 +41,7 @@ export const WordGuessGame: React.FC<WordGuessGameProps> = ({ onBack, soundEnabl
     setHintsUsed(0);
     setShowHints(false);
     setAvailableHints([]);
+    setScore(0);
     console.log('Target word:', word); // For development
   };
 
@@ -60,7 +51,7 @@ export const WordGuessGame: React.FC<WordGuessGameProps> = ({ onBack, soundEnabl
     }
   };
 
-  const getLetterStatus = (letter: string, position: number, word: string): 'correct' | 'present' | 'absent' => {
+  const getLetterStatus = (letter: string, position: number): 'correct' | 'present' | 'absent' => {
     if (targetWord[position] === letter) return 'correct';
     if (targetWord.includes(letter)) return 'present';
     return 'absent';
@@ -69,7 +60,7 @@ export const WordGuessGame: React.FC<WordGuessGameProps> = ({ onBack, soundEnabl
   const getGuessResults = (guess: string): GuessResult[] => {
     return guess.split('').map((letter, index) => ({
       letter,
-      status: getLetterStatus(letter, index, guess)
+      status: getLetterStatus(letter, index)
     }));
   };
 
@@ -77,23 +68,51 @@ export const WordGuessGame: React.FC<WordGuessGameProps> = ({ onBack, soundEnabl
     if (hintsUsed >= 3) return;
 
     const guessedLetters = new Set(guesses.join('').split(''));
-    const hints = WORDS.filter(word => {
-      // Filter words that could still be valid based on current guesses
-      for (let i = 0; i < guesses.length; i++) {
-        const guessResults = getGuessResults(guesses[i]);
-        for (let j = 0; j < guessResults.length; j++) {
-          const { letter, status } = guessResults[j];
-          if (status === 'correct' && word[j] !== letter) return false;
-          if (status === 'present' && (!word.includes(letter) || word[j] === letter)) return false;
-          if (status === 'absent' && word.includes(letter)) return false;
-        }
-      }
-      return word !== targetWord;
-    }).slice(0, 5);
+    const correctPositions = new Set<number>();
+    const presentLetters = new Set<string>();
+    const absentLetters = new Set<string>();
 
-    setAvailableHints(hints);
+    // Analyze previous guesses
+    guesses.forEach(guess => {
+      const results = getGuessResults(guess);
+      results.forEach((result, index) => {
+        if (result.status === 'correct') {
+          correctPositions.add(index);
+        } else if (result.status === 'present') {
+          presentLetters.add(result.letter);
+        } else {
+          absentLetters.add(result.letter);
+        }
+      });
+    });
+
+    // Find possible words based on constraints
+    const possibleWords = Array.from(VALID_WORDS).filter(word => {
+      if (word.length !== 5) return false;
+      
+      // Check correct positions
+      for (const pos of correctPositions) {
+        const guessedLetter = guesses.some(g => g[pos] === targetWord[pos]);
+        if (guessedLetter && word[pos] !== targetWord[pos]) return false;
+      }
+
+      // Check present letters
+      for (const letter of presentLetters) {
+        if (!word.includes(letter)) return false;
+      }
+
+      // Check absent letters
+      for (const letter of absentLetters) {
+        if (word.includes(letter)) return false;
+      }
+
+      return true;
+    }).slice(0, 8);
+
+    setAvailableHints(possibleWords);
     setShowHints(true);
     setHintsUsed(hintsUsed + 1);
+    playSound('place');
   };
 
   const submitGuess = () => {
@@ -102,7 +121,7 @@ export const WordGuessGame: React.FC<WordGuessGameProps> = ({ onBack, soundEnabl
       return;
     }
 
-    if (!WORDS.includes(currentGuess.toUpperCase())) {
+    if (!isValidWord(currentGuess)) {
       playSound('error');
       alert('Enter a valid word');
       return;
@@ -115,7 +134,7 @@ export const WordGuessGame: React.FC<WordGuessGameProps> = ({ onBack, soundEnabl
 
     if (currentGuess.toUpperCase() === targetWord) {
       setGameStatus('won');
-      const gameScore = (6 - newGuesses.length) * 100 + (3 - hintsUsed) * 50;
+      const gameScore = (7 - newGuesses.length) * 100 + (3 - hintsUsed) * 50;
       setScore(gameScore);
       playSound('success');
     } else if (newGuesses.length >= 6) {
@@ -170,7 +189,7 @@ export const WordGuessGame: React.FC<WordGuessGameProps> = ({ onBack, soundEnabl
                 {Array.from({ length: 5 }).map((_, colIndex) => {
                   const guess = guesses[rowIndex];
                   const letter = guess ? guess[colIndex] : '';
-                  const status = guess ? getLetterStatus(letter, colIndex, guess) : '';
+                  const status = guess ? getLetterStatus(letter, colIndex) : '';
                   
                   return (
                     <div
@@ -228,13 +247,13 @@ export const WordGuessGame: React.FC<WordGuessGameProps> = ({ onBack, soundEnabl
             <Card className="bg-blue-50 border-blue-200">
               <CardContent className="p-3">
                 <div className="text-sm font-medium text-blue-800 mb-2">Possible words:</div>
-                <div className="grid grid-cols-1 gap-1">
+                <div className="grid grid-cols-2 gap-1 max-h-32 overflow-y-auto">
                   {availableHints.map((hint, index) => (
                     <Button
                       key={index}
                       variant="ghost"
                       onClick={() => selectHint(hint)}
-                      className="text-left justify-start text-blue-700 hover:bg-blue-100"
+                      className="text-left justify-start text-blue-700 hover:bg-blue-100 text-xs p-1"
                     >
                       {hint}
                     </Button>

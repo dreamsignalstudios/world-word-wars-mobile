@@ -3,7 +3,7 @@ import React from 'react';
 import { useWorld } from './world-provider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Shield, Wallet } from 'lucide-react';
+import { AlertCircle, Shield, Wallet, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const WorldIdVerification: React.FC = () => {
@@ -16,9 +16,9 @@ export const WorldIdVerification: React.FC = () => {
           <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-purple-100 flex items-center justify-center">
             <Shield className="h-8 w-8 text-purple-600" />
           </div>
-          <CardTitle className="text-2xl font-bold">Human Verification Required</CardTitle>
+          <CardTitle className="text-2xl font-bold">PlayWords</CardTitle>
           <CardDescription>
-            Verify your World ID to access the word game and play with real humans only.
+            Human verification required. Only verified World ID users can play.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -35,8 +35,12 @@ export const WorldIdVerification: React.FC = () => {
               <span>Connect your World App wallet</span>
             </div>
             <div className="flex items-center space-x-2">
+              <CheckCircle className="h-4 w-4" />
+              <span>Sign authentication message</span>
+            </div>
+            <div className="flex items-center space-x-2">
               <Shield className="h-4 w-4" />
-              <span>Verify your World ID</span>
+              <span>Verify World ID (Orb required)</span>
             </div>
           </div>
 
@@ -46,11 +50,11 @@ export const WorldIdVerification: React.FC = () => {
             className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3"
             size="lg"
           >
-            {isLoading ? 'Connecting...' : 'Verify with World ID'}
+            {isLoading ? 'Verifying...' : 'Verify with World ID'}
           </Button>
           
           <p className="text-xs text-center text-gray-500">
-            Only verified humans can play. No bots allowed.
+            Only orb-verified humans can play. No bots allowed.
           </p>
         </CardContent>
       </Card>

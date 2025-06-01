@@ -1,74 +1,78 @@
 
 import React from 'react';
+import { useWorld } from '@/components/world-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useWorld } from '@/components/world-provider';
-import { Trophy, Target, Clock, DollarSign, Award, TrendingUp } from 'lucide-react';
+import { Trophy, Target, Clock, DollarSign, Shield, Users } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {
-  const { user } = useWorld();
+  const { user, disconnect } = useWorld();
 
   if (!user) return null;
 
+  // Mock stats - replace with real data
   const stats = {
     gamesPlayed: 0,
     gamesWon: 0,
     totalEarnings: 0,
     averageScore: 0,
     bestStreak: 0,
-    totalWords: 0,
-    achievements: []
+    rank: 'Unranked'
   };
 
-  const recentGames = [
-    // No recent games yet
-  ];
-
-  const achievements = [
-    { id: 'first-game', name: 'First Steps', description: 'Play your first game', unlocked: false },
-    { id: 'word-master', name: 'Word Master', description: 'Find 100 words', unlocked: false },
-    { id: 'streak-5', name: 'Hot Streak', description: 'Win 5 games in a row', unlocked: false },
-    { id: 'big-spender', name: 'High Roller', description: 'Win 100 WLD in tournaments', unlocked: false }
-  ];
+  const winRate = stats.gamesPlayed > 0 ? (stats.gamesWon / stats.gamesPlayed * 100).toFixed(1) : '0';
 
   return (
-    <div className="max-w-md mx-auto p-4 space-y-4 pb-20">
+    <div className="max-w-md mx-auto p-4 pb-20 space-y-4">
       <h1 className="text-2xl font-bold text-center">Profile</h1>
 
-      {/* User Info */}
+      {/* User Info Card */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center space-x-4 mb-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={user.avatar} />
-              <AvatarFallback className="bg-purple-100 text-purple-600 text-xl">
-                {user.username.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <h2 className="text-xl font-bold">{user.username}</h2>
-              <div className="text-sm text-gray-500 mb-2">
-                {user.walletAddress.slice(0, 6)}...{user.walletAddress.slice(-4)}
-              </div>
-              <Badge variant="secondary" className="bg-green-100 text-green-800">
-                {user.verificationLevel === 'orb' ? '🌍 Orb Verified' : '📱 Device Verified'}
-              </Badge>
+        <CardHeader className="text-center">
+          <Avatar className="h-20 w-20 mx-auto mb-4">
+            <AvatarImage src={user.avatar} />
+            <AvatarFallback className="bg-purple-100 text-purple-600 text-2xl">
+              {user.username.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <CardTitle className="text-xl">{user.username}</CardTitle>
+          <div className="flex justify-center space-x-2">
+            <Badge variant="secondary" className="bg-green-100 text-green-800">
+              {user.verificationLevel === 'orb' ? '🌍 Orb Verified' : '📱 Device Verified'}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Wallet Balance:</span>
+            <div className="flex items-center space-x-1">
+              <DollarSign className="h-4 w-4 text-green-600" />
+              <span className="font-bold">{user.balance.toFixed(2)} WLD</span>
             </div>
           </div>
-          
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <span className="text-sm font-medium">Wallet Balance</span>
-            <span className="font-bold text-lg">{user.balance.toFixed(2)} WLD</span>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">World ID:</span>
+            <span className="text-sm font-mono text-gray-500">
+              {user.id.substring(0, 8)}...{user.id.substring(user.id.length - 8)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Verification:</span>
+            <Badge variant="outline" className="text-green-600 border-green-200">
+              <Shield className="h-3 w-3 mr-1" />
+              Human Verified
+            </Badge>
           </div>
         </CardContent>
       </Card>
 
-      {/* Game Stats */}
+      {/* Game Statistics */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <TrendingUp className="h-5 w-5" />
+            <Trophy className="h-5 w-5" />
             <span>Game Statistics</span>
           </CardTitle>
         </CardHeader>
@@ -79,23 +83,25 @@ export const ProfilePage: React.FC = () => {
                 <Target className="h-8 w-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No Games Played Yet</h3>
-              <p className="text-gray-500">Start playing to see your statistics here!</p>
+              <p className="text-gray-500">
+                Start playing to see your statistics here!
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
+              <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">{stats.gamesPlayed}</div>
                 <div className="text-sm text-gray-600">Games Played</div>
               </div>
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">{stats.gamesWon}</div>
-                <div className="text-sm text-gray-600">Games Won</div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{winRate}%</div>
+                <div className="text-sm text-gray-600">Win Rate</div>
               </div>
-              <div className="text-center p-3 bg-purple-50 rounded-lg">
+              <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600">{stats.averageScore}</div>
                 <div className="text-sm text-gray-600">Avg Score</div>
               </div>
-              <div className="text-center p-3 bg-yellow-50 rounded-lg">
+              <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-600">{stats.totalEarnings.toFixed(2)}</div>
                 <div className="text-sm text-gray-600">Total Earnings</div>
               </div>
@@ -104,73 +110,58 @@ export const ProfilePage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Achievements */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Award className="h-5 w-5" />
-            <span>Achievements</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {achievements.map((achievement) => (
-            <div
-              key={achievement.id}
-              className={`flex items-center space-x-3 p-3 rounded-lg border ${
-                achievement.unlocked 
-                  ? 'bg-yellow-50 border-yellow-200' 
-                  : 'bg-gray-50 border-gray-200'
-              }`}
-            >
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                achievement.unlocked ? 'bg-yellow-500 text-white' : 'bg-gray-300 text-gray-500'
-              }`}>
-                <Trophy className="h-5 w-5" />
-              </div>
-              <div className="flex-1">
-                <div className={`font-medium ${achievement.unlocked ? 'text-yellow-800' : 'text-gray-600'}`}>
-                  {achievement.name}
-                </div>
-                <div className={`text-sm ${achievement.unlocked ? 'text-yellow-700' : 'text-gray-500'}`}>
-                  {achievement.description}
-                </div>
-              </div>
-              {achievement.unlocked && (
-                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                  Unlocked
-                </Badge>
-              )}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Recent Games */}
+      {/* Recent Activity */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Clock className="h-5 w-5" />
-            <span>Recent Games</span>
+            <span>Recent Activity</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {recentGames.length === 0 ? (
-            <div className="text-center py-6">
-              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Clock className="h-8 w-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Recent Games</h3>
-              <p className="text-gray-500">Your game history will appear here once you start playing!</p>
+          <div className="text-center py-6">
+            <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <Clock className="h-8 w-8 text-gray-400" />
             </div>
-          ) : (
-            <div className="space-y-3">
-              {recentGames.map((game, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                  {/* Game details would go here */}
-                </div>
-              ))}
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Recent Activity</h3>
+            <p className="text-gray-500">
+              Your recent games will appear here.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Achievements */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Trophy className="h-5 w-5" />
+            <span>Achievements</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-6">
+            <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <Trophy className="h-8 w-8 text-gray-400" />
             </div>
-          )}
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Achievements Yet</h3>
+            <p className="text-gray-500">
+              Start playing to unlock achievements!
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sign Out */}
+      <Card>
+        <CardContent className="p-4">
+          <Button 
+            onClick={disconnect} 
+            variant="outline" 
+            className="w-full text-red-600 border-red-200 hover:bg-red-50"
+          >
+            Sign Out
+          </Button>
         </CardContent>
       </Card>
     </div>

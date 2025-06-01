@@ -12,7 +12,6 @@ interface GameMode {
   icon: React.ReactNode;
   color: string;
   players: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
 }
 
 const gameModes: GameMode[] = [
@@ -22,8 +21,7 @@ const gameModes: GameMode[] = [
     description: 'Guess the 5-letter word in 6 tries with hints',
     icon: <Brain className="h-6 w-6" />,
     color: 'bg-blue-500',
-    players: 'Solo',
-    difficulty: 'Easy'
+    players: 'Solo'
   },
   {
     id: 'crossword',
@@ -31,8 +29,7 @@ const gameModes: GameMode[] = [
     description: 'Build words on a 15×15 grid with bonus squares',
     icon: <Grid3X3 className="h-6 w-6" />,
     color: 'bg-green-500',
-    players: 'Solo',
-    difficulty: 'Medium'
+    players: 'Solo'
   },
   {
     id: 'multiplayer',
@@ -40,8 +37,7 @@ const gameModes: GameMode[] = [
     description: 'Real-time crossword battles with friends',
     icon: <Users className="h-6 w-6" />,
     color: 'bg-purple-500',
-    players: '2-4 Players',
-    difficulty: 'Hard'
+    players: '2-4 Players'
   },
   {
     id: 'tournament',
@@ -49,8 +45,7 @@ const gameModes: GameMode[] = [
     description: 'Compete in tournaments with $WLD prizes',
     icon: <Trophy className="h-6 w-6" />,
     color: 'bg-yellow-500',
-    players: 'Up to 10',
-    difficulty: 'Hard'
+    players: 'Up to 10'
   }
 ];
 
@@ -74,14 +69,7 @@ export const GameModes: React.FC<GameModesProps> = ({ onSelectMode }) => {
                 <div className={`p-3 rounded-lg ${mode.color} text-white`}>
                   {mode.icon}
                 </div>
-                <div className="flex space-x-2">
-                  <Badge variant="secondary">{mode.players}</Badge>
-                  <Badge 
-                    variant={mode.difficulty === 'Easy' ? 'secondary' : mode.difficulty === 'Medium' ? 'default' : 'destructive'}
-                  >
-                    {mode.difficulty}
-                  </Badge>
-                </div>
+                <Badge variant="secondary">{mode.players}</Badge>
               </div>
               <CardTitle className="text-xl">{mode.title}</CardTitle>
               <CardDescription>{mode.description}</CardDescription>

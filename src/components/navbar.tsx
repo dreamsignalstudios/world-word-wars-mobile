@@ -12,12 +12,12 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ soundEnabled, onSoundToggle }) => {
-  const { user, isAuthenticated, connect, isLoading } = useWorld();
+  const { user, isAuthenticated } = useWorld();
 
   return (
     <nav className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
       <div className="flex items-center space-x-3">
-        <div className="text-xl font-bold text-purple-600">WordGame</div>
+        <div className="text-xl font-bold text-purple-600">PlayWords</div>
         {isAuthenticated && user && (
           <Badge variant="secondary" className="bg-green-100 text-green-800">
             {user.verificationLevel === 'orb' ? '🌍 Orb Verified' : '📱 Device Verified'}
@@ -39,7 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({ soundEnabled, onSoundToggle }) =
           )}
         </Button>
 
-        {isAuthenticated && user ? (
+        {isAuthenticated && user && (
           <div className="flex items-center space-x-2">
             <div className="text-sm text-right">
               <div className="font-medium">{user.username}</div>
@@ -52,14 +52,6 @@ export const Navbar: React.FC<NavbarProps> = ({ soundEnabled, onSoundToggle }) =
               </AvatarFallback>
             </Avatar>
           </div>
-        ) : (
-          <Button 
-            onClick={connect} 
-            disabled={isLoading}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
-          >
-            {isLoading ? 'Connecting...' : 'Verify with World ID'}
-          </Button>
         )}
       </div>
     </nav>
